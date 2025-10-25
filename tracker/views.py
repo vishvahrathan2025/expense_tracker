@@ -87,19 +87,30 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Expense
 
+# tracker/views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Expense
+from .forms import ExpenseForm
+
 def edit_expense(request, expense_id):
     expense = get_object_or_404(Expense, id=expense_id, user=request.user)
 
     if request.method == 'POST':
-        expense.title = request.POST['title']
-        expense.amount = request.POST['amount']
-        expense.category = request.POST['category']
-        expense.date = request.POST['date']
-        expense.description = request.POST.get('description', '')
-        expense.save()
+        form = ExpenseForm(request.POST, instance=expense)
+        if form.is_valid():
+            form.save()
+            return redirect('home')  # Go back to the main page
+    else:
+        form = ExpenseForm(instance=expense)
 
-        messages.success(request, "Expense updated successfully! ✨")
-        return redirect('home')
+    return render(request, 'edit_expense.html', {'form': form, 'expense': expense})
 
-    expenses = Expense.objects.all()
-    return render(request, 'home.html', {'expenses': expenses})
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Expense
+
+def delete_expense(request, id):
+    expense = get_object_or_404(Expense, id=id)
+    expense.delete()
+    return redirect('home')
+

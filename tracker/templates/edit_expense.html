@@ -1,2 +1,24 @@
-<input type="text" id="title" name="title" class="form-control"
-       value="{{ expense.title }}" required>
+{% load crispy_forms_tags %}
+<form method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Update</button>
+</form>
+
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-lg p-4 rounded-4">
+        <h3 class="text-center text-primary mb-4">Edit Expense</h3>
+
+        <form method="POST" class="needs-validation" novalidate>
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Update Expense</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
