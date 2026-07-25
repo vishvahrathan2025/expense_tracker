@@ -12,6 +12,9 @@
         }
         .container {
             margin-top: 3px;
+            align-items: center;
+            align-self: center;
+            align-content: center;
         }
         .card {
             border-radius: 12px;
@@ -77,6 +80,8 @@
                     <td colspan="5" class="text-center text-muted">No expenses added yet.</td>
                 </tr>
                 {% endfor %}
+                <h5 class="mb-1 text-secondary">Total expense : 	₹{{total}}</h5>
+                
             </tbody>
         </table>
     </div>

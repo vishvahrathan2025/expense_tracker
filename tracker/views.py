@@ -1,116 +1,152 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .models import Expense
 from .forms import ExpenseForm
-from django.contrib.auth.decorators import login_required
+
 import matplotlib
-matplotlib.use('Agg')  # Important: for rendering charts without a GUI
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-from django.contrib import messages
-from django.shortcuts import redirect
 
 
 @login_required
 def add_expense(request):
-    if request.method == 'POST':
-        # your existing save logic
-        # Example:
-        Expense.objects.create(
-            user=request.user,
-            title=request.POST['title'],
-            amount=request.POST['amount'],
-            category=request.POST['category'],
-            date=request.POST['date'],
-            description=request.POST.get('description', '')
-        )
-        messages.success(request, "Expense added successfully! 🎉")
-        return redirect('add_expense')
+    if request.method == "POST":
+        form = ExpenseForm(request.POST)
 
-    return render(request, 'add_expense.html')
+        if form.is_valid():
+            expense = form.save(commit=False)
+            expense.user = request.user
+            expense.save()
+
+            messages.success(request, "Expense added successfully! 🎉")
+            return redirect("add_expense")
+    else:
+        form = ExpenseForm()
+
+    return render(request, "add_expense.html", {"form": form})
+
 
 def home(request):
-    expenses = Expense.objects.filter(user=request.user) if request.user.is_authenticated else []
+    if request.user.is_authenticated:
+        expenses = Expense.objects.filter(user=request.user).order_by("-date")
+    else:
+        expenses = []
+
     total = sum(exp.amount for exp in expenses)
+
+    # ---------------- Pie Chart ----------------
     categories = {}
     for exp in expenses:
         categories[exp.category] = categories.get(exp.category, 0) + float(exp.amount)
 
-    chart = None
+    pie_chart = None
+
     if categories:
-        fig, ax = plt.subplots()
-        ax.pie(categories.values(), labels=categories.keys(), autopct='%1.1f%%', startangle=90)
-        ax.axis('equal')  # Equal aspect ratio ensures the pie is circular
+        fig, ax = plt.subplots(figsize=(5, 5))
+        ax.pie(
+            categories.values(),
+            labels=categories.keys(),
+            autopct="%1.1f%%",
+            startangle=90
+        )
+        ax.axis("equal")
 
         buffer = BytesIO()
-        plt.savefig(buffer, format='png')
+        plt.tight_layout()
+        plt.savefig(buffer, format="png")
         buffer.seek(0)
-        image_png = buffer.getvalue()
-        buffer.close()
 
-        chart = base64.b64encode(image_png).decode('utf-8')
+        pie_chart = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+        buffer.close()
         plt.close(fig)
-        monthly_totals = {}
+
+    # ---------------- Bar Chart ----------------
+    monthly_totals = {}
+
     for exp in expenses:
-        month_name = exp.date.strftime('%b %Y')  # e.g., "Oct 2025"
-        monthly_totals[month_name] = monthly_totals.get(month_name, 0) + float(exp.amount)
+        month = exp.date.strftime("%b %Y")
+        monthly_totals[month] = monthly_totals.get(month, 0) + float(exp.amount)
 
     bar_chart = None
+
     if monthly_totals:
         months = list(monthly_totals.keys())
         totals = list(monthly_totals.values())
 
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.bar(months, totals, color='skyblue')
-        ax.set_title('Monthly Expenses')
-        ax.set_xlabel('Month')
-        ax.set_ylabel('Amount (₹)')
-        plt.xticks(rotation=45, ha='right')
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.bar(months, totals)
+
+        ax.set_title("Monthly Expenses")
+        ax.set_xlabel("Month")
+        ax.set_ylabel("Amount (₹)")
+
+        plt.xticks(rotation=45)
+        plt.tight_layout()
 
         buffer = BytesIO()
-        plt.tight_layout()
-        plt.savefig(buffer, format='png')
+        plt.savefig(buffer, format="png")
         buffer.seek(0)
-        bar_chart = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+        bar_chart = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
         buffer.close()
         plt.close(fig)
 
-    return render(request, 'home.html', {
-        'expenses': expenses,
-        'total': total,
-        'pie_chart': chart,
-        'bar_chart': bar_chart
-    })
+    return render(
+        request,
+        "home.html",
+        {
+            "expenses": expenses,
+            "total": total,
+            "pie_chart": pie_chart,
+            "bar_chart": bar_chart,
+        },
+    )
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Expense
-
-# tracker/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Expense
-from .forms import ExpenseForm
-
+@login_required
 def edit_expense(request, expense_id):
-    expense = get_object_or_404(Expense, id=expense_id, user=request.user)
+    expense = get_object_or_404(
+        Expense,
+        id=expense_id,
+        user=request.user
+    )
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ExpenseForm(request.POST, instance=expense)
+
         if form.is_valid():
             form.save()
-            return redirect('home')  # Go back to the main page
+            messages.success(request, "Expense updated successfully! ✅")
+            return redirect("home")
+
     else:
         form = ExpenseForm(instance=expense)
 
-    return render(request, 'edit_expense.html', {'form': form, 'expense': expense})
+    return render(
+        request,
+        "edit_expense.html",
+        {
+            "form": form,
+            "expense": expense,
+        },
+    )
 
 
-from django.shortcuts import get_object_or_404, redirect
-from .models import Expense
-
+@login_required
 def delete_expense(request, id):
-    expense = get_object_or_404(Expense, id=id)
-    expense.delete()
-    return redirect('home')
+    expense = get_object_or_404(
+        Expense,
+        id=id,
+        user=request.user
+    )
 
+    expense.delete()
+    messages.success(request, "Expense deleted successfully! 🗑️")
+
+    return redirect("home")
