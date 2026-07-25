@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Income{% endblock %}
+
+{% block content %}
+
+<div class="card shadow">
+
+<div class="card-body text-center">
+
+<h3>
+
+Delete Income?
+
+</h3>
+
+<p>
+
+{{ income.source }}
+
+—
+
+₹{{ income.amount }}
+
+</p>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<button
+class="btn btn-danger">
+
+Delete
+
+</button>
+
+<a
+href="{% url 'income' %}"
+class="btn btn-secondary">
+
+Cancel
+
+</a>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

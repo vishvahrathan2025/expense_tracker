@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Budget{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+<div class="col-lg-7">
+
+<div class="card shadow">
+
+<div class="card-header bg-success text-white">
+
+<h3>
+
+🎯 Monthly Budget
+
+</h3>
+
+</div>
+
+<div class="card-body">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<label>
+
+Monthly Budget (₹)
+
+</label>
+
+{{ form.monthly_budget }}
+
+<br><br>
+
+<button
+class="btn btn-success">
+
+Save Budget
+
+</button>
+
+</form>
+
+<hr>
+
+<h5>
+
+Budget Summary
+
+</h5>
+
+<p>
+
+Budget:
+<strong>
+
+₹{{ budget.monthly_budget }}
+
+</strong>
+
+</p>
+
+<p>
+
+Spent:
+
+<strong>
+
+₹{{ total_expense }}
+
+</strong>
+
+</p>
+
+<p>
+
+Remaining:
+
+<strong>
+
+₹{{ remaining }}
+
+</strong>
+
+</p>
+
+<div class="progress">
+
+<div
+class="progress-bar bg-success"
+
+style="width: {{ percent }}%;">
+
+{{ percent|floatformat:1 }}%
+
+</div>
+
+</div>
+
+{% if remaining < 0 %}
+
+<div class="alert alert-danger mt-3">
+
+⚠ You have exceeded your monthly budget!
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

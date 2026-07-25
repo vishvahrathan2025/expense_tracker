@@ -20,3 +20,6 @@ Include/
 
 # VSCode settings
 .vscode/
+
+# SQLite database
+db.sqlite3
