@@ -40,8 +40,6 @@ Expense-Tracker/
 │
 ├── expense_tracker/
 ├── tracker/
-├── templates/
-├── db.sqlite3
 ├── manage.py
 ├── requirements.txt
 └── README.md
@@ -109,21 +107,19 @@ http://127.0.0.1:8000/
 
 ### Login
 
-(Add screenshot here)
+![Login](screenshots/login.png)
 
 ### Dashboard
 
-(Add screenshot here)
+![Dashboard](screenshots/dashboard.png)
 
 ### Budget
 
-(Add screenshot here)
+![Budget](screenshots/budget.png)
 
 ### Income
 
-(Add screenshot here)
-
----
+![Income](screenshots/income.png)
 
 ## 📊 Future Improvements
 
@@ -156,6 +152,6 @@ This project helped me gain hands-on experience with:
 
 **Vishva**
 
-GitHub: https://github.com/YOUR_USERNAME
+GitHub: https://github.com/vishvahrathan2025    
 
-LinkedIn: https://linkedin.com/in/YOUR_LINKEDIN
+LinkedIn: https://www.linkedin.com/in/vishvahrathan-meenakumar-023179387/
